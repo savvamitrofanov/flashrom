@@ -3136,6 +3136,48 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Atmel",
+		.name		= "AT45DB641E",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= ATMEL_AT45DB641E,
+		.total_size	= 8192, /* or 8448, determined from status register */
+		.page_size	= 256, /* or 264, determined from status register */
+		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
+		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
+		.feature_bits	= FEATURE_OTP,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_at45db,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {256, 32768} },
+				.block_erase = spi_erase_at45db_page,
+			}, {
+				.eraseblocks = { {8 * 256, 32768/8} },
+				.block_erase = spi_erase_at45db_block,
+			}, {
+				.eraseblocks = {
+					{8 * 256, 1},
+					{1016 * 256, 1},
+					{1024 * 256, 31},
+				},
+				.block_erase = spi_erase_at45db_sector
+			}, {
+				.eraseblocks = { {8192 * 1024, 1} },
+				.block_erase = spi_erase_at45db_chip,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_at45db,
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
+		/* granularity will be set by the probing function. */
+		.write		= spi_write_at45db,
+		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
+		.voltage	= {1700, 3600},
+	},
+
+	{
+		.vendor		= "Atmel",
 		.name		= "AT49(H)F010",
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
